@@ -47,7 +47,7 @@ defmodule Zonal.SerializerTest do
   }
 
   @standard_answer_packet_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 7, 101, 120, 97, 109,
-                                   112, 108, 101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+                                   112, 108, 101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0, 0, 0,
                                    0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
 
   @standard_answer_packet_subdomains %Packet{
@@ -75,7 +75,7 @@ defmodule Zonal.SerializerTest do
 
   @standard_answer_packet_subdomains_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 1, 97, 4,
                                               119, 119, 119, 50, 7, 101, 120, 97, 109, 112, 108,
-                                              101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+                                              101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0, 0, 0,
                                               0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
 
   test "serialize/1 basic query" do

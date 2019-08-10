@@ -40,18 +40,23 @@ defmodule Zonal.Serializer do
 
     result =
       Enum.reduce(packet.answers, result, fn %Resource{} = resource, packet ->
-        packet <> serialize_resource(resource)
+        packet <> serialize_resource(resource, packet)
       end)
 
     Enum.reduce(packet.resources, result, fn %Resource{} = resource, packet ->
-      packet <> serialize_resource(resource)
+      packet <> serialize_resource(resource, packet)
     end)
   end
 
-  defp serialize_resource(%Resource{} = resource) do
-    name = serialize_name(resource.name)
+  defp serialize_resource(%Resource{} = resource, packet) do
+    name =
+      resource.name
+      |> serialize_name()
+      |> compress_name(packet)
+
     name_length = byte_size(name)
     data_length = byte_size(resource.data)
+
     <<name::size(name_length)-binary, resource.type::16,
       resource.class::16, resource.ttl::32, data_length::16,
       resource.data::size(data_length)-binary>>
@@ -70,5 +75,17 @@ defmodule Zonal.Serializer do
       acc <> <<x_length::8, x::size(x_length)-binary>>
     end)
     |> Kernel.<>(<<0>>)
+  end
+
+  # If the query domain matches the domain we're serializing, reference that
+  # using a compression pointer instead of re-serializing it again.
+  defp compress_name(name, packet) do
+    name_size = byte_size(name)
+    with <<_header::12-binary, ^name::size(name_size)-binary, _rest::binary>> <- packet do
+      # we're relying on the header always being 12 bytes. This might be naive.
+      <<1::1, 1::1, 12::14>>
+    else
+      _ -> name
+    end
   end
 end
