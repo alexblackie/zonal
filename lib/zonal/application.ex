@@ -9,6 +9,7 @@ defmodule Zonal.Application do
     children = [
       # Starts a worker by calling: Zonal.Worker.start_link(arg)
       # {Zonal.Worker, arg}
+      {Zonal.Listener, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
