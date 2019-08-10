@@ -38,12 +38,37 @@ defmodule Zonal.Serializer do
           packet.tld_name::size(tld_length)-binary, 0, packet.query_type::16,
           packet.query_class::16>>
 
-    Enum.reduce(packet.answers, result, fn %Resource{} = resource, packet ->
-      data_length = byte_size(resource.data)
+    result =
+      Enum.reduce(packet.answers, result, fn %Resource{} = resource, packet ->
+        packet <> serialize_resource(resource)
+      end)
 
-      packet <>
-        <<0, resource.type::16, resource.class::16, resource.ttl::32, data_length::16,
-          resource.data::size(data_length)-binary>>
+    Enum.reduce(packet.resources, result, fn %Resource{} = resource, packet ->
+      packet <> serialize_resource(resource)
     end)
+  end
+
+  defp serialize_resource(%Resource{} = resource) do
+    name = serialize_name(resource.name)
+    name_length = byte_size(name)
+    data_length = byte_size(resource.data)
+    <<name::size(name_length)-binary, resource.type::16,
+      resource.class::16, resource.ttl::32, data_length::16,
+      resource.data::size(data_length)-binary>>
+  end
+
+  defp serialize_name(nil) do
+    # If the name is nil, assume <<0>> which is the root domain.
+    <<0>>
+  end
+
+  defp serialize_name(name) do
+    name
+    |> String.split(".")
+    |> Enum.reduce(<<>>, fn x, acc ->
+      x_length = byte_size(x)
+      acc <> <<x_length::8, x::size(x_length)-binary>>
+    end)
+    |> Kernel.<>(<<0>>)
   end
 end

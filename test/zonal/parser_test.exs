@@ -1,7 +1,7 @@
 defmodule Zonal.ParserTest do
   use ExUnit.Case, async: true
 
-  alias Zonal.Parser
+  alias Zonal.{Parser, Resource}
 
   @fixture_a_request <<170, 170, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7, 101, 120, 97, 109, 112, 108,
                        101, 3, 99, 111, 109, 0, 0, 1, 0, 1>>
@@ -34,6 +34,10 @@ defmodule Zonal.ParserTest do
   end
 
   test "parse/1 with a valid A record request with extra data" do
-    Parser.parse(@fixture_a_request_with_extra_data)
+    packet = Parser.parse(@fixture_a_request_with_extra_data)
+
+    assert [%Resource{} = resource] = packet.resources
+    # (edns(0))
+    assert resource.type == 41
   end
 end

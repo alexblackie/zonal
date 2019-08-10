@@ -4,7 +4,7 @@ defmodule Zonal.Parser do
   """
   require Logger
 
-  alias Zonal.Packet
+  alias Zonal.{Packet, Resource}
 
   @doc "Parses a query packet."
   def parse(
@@ -20,12 +20,10 @@ defmodule Zonal.Parser do
       |> Enum.reduce(0, fn p, acc -> acc + byte_size(p) end)
       |> Kernel.+(length(parts))
 
-    <<_domains::size(domain_bytes)-binary, 0, qtype::16, qclass::16, _additional::binary>> =
-      domain_and_data
+    <<_domains::size(domain_bytes)-binary, 0, qtype::16, qclass::16, additional::binary>> = domain_and_data
 
     # <<0>> == root domain
-    # TODO: parse and support EDNS OPT
-    # <<0, rtype::16, rclass::16, _ttl::32, rdlength::16, _rdata::size(rdlength)-binary>> = additional
+    resources = parse_resources(additional, [])
 
     tld_name = Enum.at(parts, 0)
     domain_name = Enum.at(parts, 1)
@@ -48,7 +46,8 @@ defmodule Zonal.Parser do
       query_class: qclass,
       domain_name: domain_name,
       tld_name: tld_name,
-      subdomains: subdomains
+      subdomains: subdomains,
+      resources: resources
     }
   end
 
@@ -81,5 +80,22 @@ defmodule Zonal.Parser do
          parts
        ) do
     extract_domains(remainder, [domain_part | parts])
+  end
+
+  # Parse RR data into a %Resource struct.
+  #
+  # TODO support multiple
+  #
+  # <<0>> = root domain
+  defp parse_resources(<<0, rtype::16, rclass::16, ttl::32, rdlength::16, rdata::size(rdlength)-binary>>, []) do
+    [%Resource{
+      type: rtype,
+      class: rclass,
+      ttl: ttl,
+      data: rdata
+    }]
+  end
+  defp parse_resources(<<>>, []) do
+    []
   end
 end
