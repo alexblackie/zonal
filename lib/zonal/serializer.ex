@@ -11,7 +11,7 @@ defmodule Zonal.Serializer do
     # Pre-"render" the control octets for cleaner serialization later.
     meta =
       <<packet.query_or_resource::1, packet.opcode::4, packet.authoritative_answer::1,
-        packet.truncated::1, packet.recursion_desired::1, packet.recursion_available::1, 0, 0, 0,
+        packet.truncated::1, packet.recursion_desired::1, packet.recursion_available::1, 0::1, 0::1, 0::1,
         packet.response_code::4>>
 
     # Start with the packet header information.
