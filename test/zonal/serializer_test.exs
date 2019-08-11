@@ -47,8 +47,8 @@ defmodule Zonal.SerializerTest do
   }
 
   @standard_answer_packet_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 7, 101, 120, 97, 109,
-                                   112, 108, 101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0, 0, 0,
-                                   0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
+                                   112, 108, 101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0,
+                                   0, 0, 0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
 
   @standard_answer_packet_subdomains %Packet{
     id: 123,
@@ -75,8 +75,34 @@ defmodule Zonal.SerializerTest do
 
   @standard_answer_packet_subdomains_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 1, 97, 4,
                                               119, 119, 119, 50, 7, 101, 120, 97, 109, 112, 108,
-                                              101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0, 0, 0,
-                                              0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
+                                              101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0,
+                                              0, 0, 0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
+
+  @standard_answer_packet_txt %Packet{
+    id: 123,
+    query_or_resource: 1,
+    opcode: 0,
+    authoritative_answer: 1,
+    truncated: 0,
+    recursion_desired: 1,
+    recursion_available: 1,
+    response_code: 0,
+    query_count: 1,
+    answer_count: 1,
+    nameserver_count: 0,
+    additional_count: 0,
+    query_type: 16,
+    query_class: 1,
+    subdomains: [],
+    domain_name: "example",
+    tld_name: "com",
+    answers: [
+      %Resource{name: "example.com", class: 1, type: 16, ttl: 300, data: "test"}
+    ]
+  }
+  @standard_answer_packet_txt_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 7, 101, 120, 97,
+                                       109, 112, 108, 101, 3, 99, 111, 109, 0, 0, 16, 0, 1, 192,
+                                       12, 0, 16, 0, 1, 0, 0, 1, 44, 0, 5, 4, 116, 101, 115, 116>>
 
   test "serialize/1 basic query" do
     assert @standard_query_packet_binary = Serializer.serialize(@standard_query_packet)
@@ -89,5 +115,9 @@ defmodule Zonal.SerializerTest do
   test "serialize/1 basic answer with subdomains" do
     assert @standard_answer_packet_subdomains_binary =
              Serializer.serialize(@standard_answer_packet_subdomains)
+  end
+
+  test "serialize/1 basic answer TXT record" do
+    assert @standard_answer_packet_txt_binary = Serializer.serialize(@standard_answer_packet_txt)
   end
 end

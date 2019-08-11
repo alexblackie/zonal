@@ -11,8 +11,8 @@ defmodule Zonal.Serializer do
     # Pre-"render" the control octets for cleaner serialization later.
     meta =
       <<packet.query_or_resource::1, packet.opcode::4, packet.authoritative_answer::1,
-        packet.truncated::1, packet.recursion_desired::1, packet.recursion_available::1, 0::1, 0::1, 0::1,
-        packet.response_code::4>>
+        packet.truncated::1, packet.recursion_desired::1, packet.recursion_available::1, 0::1,
+        0::1, 0::1, packet.response_code::4>>
 
     # Start with the packet header information.
     result =
@@ -24,8 +24,7 @@ defmodule Zonal.Serializer do
       packet.subdomains
       |> Enum.reverse()
       |> Enum.reduce(result, fn sd, packet ->
-        sd_length = byte_size(sd)
-        packet <> <<sd_length::8, sd::size(sd_length)-binary>>
+        packet <> serialize_character_string(sd)
       end)
 
     domain_length = byte_size(packet.domain_name)
@@ -48,18 +47,35 @@ defmodule Zonal.Serializer do
     end)
   end
 
+  @doc """
+  Turn the given binary into a RFC-1035 <character-string>, which prefixes the
+  byte length as an 8-bit field directly preceeding the binary data itself.
+  """
+  @spec serialize_character_string(binary()) :: binary()
+  def serialize_character_string(data) do
+    d_length = byte_size(data)
+    <<d_length::8, data::size(d_length)-binary>>
+  end
+
   defp serialize_resource(%Resource{} = resource, packet) do
     name =
       resource.name
       |> serialize_name()
       |> compress_name(packet)
 
-    name_length = byte_size(name)
-    data_length = byte_size(resource.data)
+    data =
+      case resource.type do
+        # TXT records must be serialized as a series of character strings,
+        # similar to names.
+        16 -> serialize_character_string(resource.data)
+        _ -> resource.data
+      end
 
-    <<name::size(name_length)-binary, resource.type::16,
-      resource.class::16, resource.ttl::32, data_length::16,
-      resource.data::size(data_length)-binary>>
+    name_length = byte_size(name)
+    data_length = byte_size(data)
+
+    <<name::size(name_length)-binary, resource.type::16, resource.class::16, resource.ttl::32,
+      data_length::16, data::size(data_length)-binary>>
   end
 
   defp serialize_name(nil) do
@@ -71,8 +87,7 @@ defmodule Zonal.Serializer do
     name
     |> String.split(".")
     |> Enum.reduce(<<>>, fn x, acc ->
-      x_length = byte_size(x)
-      acc <> <<x_length::8, x::size(x_length)-binary>>
+      acc <> serialize_character_string(x)
     end)
     |> Kernel.<>(<<0>>)
   end
@@ -81,6 +96,7 @@ defmodule Zonal.Serializer do
   # using a compression pointer instead of re-serializing it again.
   defp compress_name(name, packet) do
     name_size = byte_size(name)
+
     with <<_header::12-binary, ^name::size(name_size)-binary, _rest::binary>> <- packet do
       # we're relying on the header always being 12 bytes. This might be naive.
       <<1::1, 1::1, 12::14>>
