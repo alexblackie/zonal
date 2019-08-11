@@ -23,4 +23,9 @@ defmodule Zonal.PacketTest do
     inet_packet = %Packet{query_class: 1}
     assert Packet.query_class(inet_packet) == "IN"
   end
+
+  test "query_domain/1" do
+    packet = %Packet{domain_name: "example", tld_name: "com", subdomains: ["www", "deep"]}
+    assert Packet.query_domain(packet) == "deep.www.example.com"
+  end
 end

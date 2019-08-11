@@ -55,6 +55,8 @@ defmodule Zonal.Packet do
     4 => "Hesiod"
   }
 
+  @type t() :: %__MODULE__{}
+
   defstruct [
     :id,
     :query_or_resource,
@@ -80,4 +82,13 @@ defmodule Zonal.Packet do
   def query?(packet), do: packet.query_or_resource == 0
   def query_type(packet), do: Map.get(@types, packet.query_type)
   def query_class(packet), do: Map.get(@classes, packet.query_class)
+
+  @doc "Get the full query domain, with dots."
+  @spec query_domain(t()) :: String.t()
+  def query_domain(packet) do
+    packet.subdomains
+    |> Enum.reverse()
+    |> Enum.concat([packet.domain_name, packet.tld_name])
+    |> Enum.join(".")
+  end
 end
