@@ -1,7 +1,7 @@
 defmodule Zonal.Listener do
   use GenServer
 
-  alias Zonal.{Parser, Resource, Serializer}
+  alias Zonal.{Parser, Serializer, Zones}
 
   @port Application.get_env(:zonal, :port)
 
@@ -17,15 +17,24 @@ defmodule Zonal.Listener do
 
   @impl true
   def handle_info({:udp, sock, addr, port, blob}, state) do
+    packet = Parser.parse(blob)
+
     resp =
-      Parser.parse(blob)
+      case Zones.get_resource(packet) do
+        [] ->
+          # nxdomain
+          Map.put(packet, :response_code, 3)
+
+        records ->
+          packet
+          |> Map.put(:answer_count, 1)
+          |> Map.put(:answers, records)
+      end
+
+    resp =
+      resp
       |> Map.put(:query_or_resource, 1)
       |> Map.put(:authoritative_answer, 1)
-      |> Map.put(:answer_count, 1)
-      |> Map.put(:answers, [
-        # stub
-        %Resource{type: 1, class: 1, name: "www.example.com", ttl: 300, data: <<127, 0, 0, 1>>}
-      ])
       |> Serializer.serialize()
 
     :gen_udp.send(sock, addr, port, resp)
