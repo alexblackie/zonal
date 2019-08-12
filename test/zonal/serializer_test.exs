@@ -42,13 +42,13 @@ defmodule Zonal.SerializerTest do
     domain_name: "example",
     tld_name: "com",
     answers: [
-      %Resource{name: "example.com", class: 0, type: 0, ttl: 300, data: <<127, 0, 0, 1>>}
+      %Resource{name: "example.com", class: 1, type: 1, ttl: 300, data: "127.0.0.1"}
     ]
   }
 
   @standard_answer_packet_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 7, 101, 120, 97, 109,
-                                   112, 108, 101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0,
-                                   0, 0, 0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
+                                   112, 108, 101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 1,
+                                   0, 1, 0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
 
   @standard_answer_packet_subdomains %Packet{
     id: 123,
@@ -69,14 +69,14 @@ defmodule Zonal.SerializerTest do
     domain_name: "example",
     tld_name: "com",
     answers: [
-      %Resource{name: "a.www2.example.com", class: 0, type: 0, ttl: 300, data: <<127, 0, 0, 1>>}
+      %Resource{name: "a.www2.example.com", class: 1, type: 1, ttl: 300, data: "127.0.0.1"}
     ]
   }
 
   @standard_answer_packet_subdomains_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 1, 97, 4,
                                               119, 119, 119, 50, 7, 101, 120, 97, 109, 112, 108,
-                                              101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 0,
-                                              0, 0, 0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
+                                              101, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192, 12, 0, 1,
+                                              0, 1, 0, 0, 1, 44, 0, 4, 127, 0, 0, 1>>
 
   @standard_answer_packet_txt %Packet{
     id: 123,

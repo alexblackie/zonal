@@ -72,6 +72,13 @@ defmodule Zonal.Serializer do
       data_length::16, data::size(data_length)-binary>>
   end
 
+  defp serialize_rdata(1, data) do
+    data
+    |> String.split(".")
+    |> Enum.map(&String.to_integer/1)
+    |> :binary.list_to_bin()
+  end
+
   defp serialize_rdata(15, data) do
     [prio, exchange] = String.split(data, " ")
     prio = String.to_integer(prio)
