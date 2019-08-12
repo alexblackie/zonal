@@ -104,6 +104,38 @@ defmodule Zonal.SerializerTest do
                                        109, 112, 108, 101, 3, 99, 111, 109, 0, 0, 16, 0, 1, 192,
                                        12, 0, 16, 0, 1, 0, 0, 1, 44, 0, 5, 4, 116, 101, 115, 116>>
 
+  @standard_answer_packet_mx %Packet{
+    id: 123,
+    query_or_resource: 1,
+    opcode: 0,
+    authoritative_answer: 1,
+    truncated: 0,
+    recursion_desired: 1,
+    recursion_available: 1,
+    response_code: 0,
+    query_count: 1,
+    answer_count: 2,
+    nameserver_count: 0,
+    additional_count: 0,
+    query_type: 15,
+    query_class: 1,
+    subdomains: [],
+    domain_name: "example",
+    tld_name: "com",
+    answers: [
+      %Resource{name: "example.com", class: 1, type: 15, ttl: 300, data: "10 mx-a.example.com"},
+      %Resource{name: "example.com", class: 1, type: 15, ttl: 300, data: "20 mx-b.example.com"}
+    ]
+  }
+
+  @standard_answer_packet_mx_binary <<0, 123, 133, 128, 0, 1, 0, 2, 0, 0, 0, 0, 7, 101, 120, 97,
+                                      109, 112, 108, 101, 3, 99, 111, 109, 0, 0, 15, 0, 1, 192,
+                                      12, 0, 15, 0, 1, 0, 0, 1, 44, 0, 20, 0, 10, 4, 109, 120, 45,
+                                      97, 7, 101, 120, 97, 109, 112, 108, 101, 3, 99, 111, 109, 0,
+                                      192, 12, 0, 15, 0, 1, 0, 0, 1, 44, 0, 20, 0, 20, 4, 109,
+                                      120, 45, 98, 7, 101, 120, 97, 109, 112, 108, 101, 3, 99,
+                                      111, 109, 0>>
+
   test "serialize/1 basic query" do
     assert @standard_query_packet_binary = Serializer.serialize(@standard_query_packet)
   end
@@ -119,5 +151,9 @@ defmodule Zonal.SerializerTest do
 
   test "serialize/1 basic answer TXT record" do
     assert @standard_answer_packet_txt_binary = Serializer.serialize(@standard_answer_packet_txt)
+  end
+
+  test "serialize/1 basic answer MX record" do
+    assert @standard_answer_packet_mx_binary = Serializer.serialize(@standard_answer_packet_mx)
   end
 end

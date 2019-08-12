@@ -63,19 +63,31 @@ defmodule Zonal.Serializer do
       |> serialize_name()
       |> compress_name(packet)
 
-    data =
-      case resource.type do
-        # TXT records must be serialized as a series of character strings,
-        # similar to names.
-        16 -> serialize_character_string(resource.data)
-        _ -> resource.data
-      end
+    data = serialize_rdata(resource.type, resource.data)
 
     name_length = byte_size(name)
     data_length = byte_size(data)
 
     <<name::size(name_length)-binary, resource.type::16, resource.class::16, resource.ttl::32,
       data_length::16, data::size(data_length)-binary>>
+  end
+
+  defp serialize_rdata(15, data) do
+    [prio, exchange] = String.split(data, " ")
+    prio = String.to_integer(prio)
+    exchange = serialize_name(exchange)
+    exchange_length = byte_size(exchange)
+
+    <<prio::16, exchange::size(exchange_length)-binary>>
+  end
+
+  defp serialize_rdata(16, data) do
+    # TXT records must be serialized as character strings.
+    serialize_character_string(data)
+  end
+
+  defp serialize_rdata(_type, data) do
+    data
   end
 
   defp serialize_name(nil) do

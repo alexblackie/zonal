@@ -16,7 +16,8 @@ defmodule Zonal.Zones do
           data: <<192, 168, 2, 40>>
         },
         %Resource{name: "test.example.com", ttl: 300, class: 1, type: 16, data: "hello"},
-        %Resource{name: "example.com", ttl: 300, class: 1, type: 1, data: <<192, 168, 2, 40>>}
+        %Resource{name: "example.com", ttl: 300, class: 1, type: 1, data: <<192, 168, 2, 40>>},
+        %Resource{name: "example.com", ttl: 300, class: 1, type: 15, data: "10 mxa.example.com"}
       ]
     }
   }
