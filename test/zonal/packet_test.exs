@@ -13,15 +13,15 @@ defmodule Zonal.PacketTest do
 
   test "query_type/1" do
     a_packet = %Packet{query_type: 1}
-    assert Packet.query_type(a_packet) == "A"
+    assert Packet.query_type(a_packet) == :a
 
     mx_packet = %Packet{query_type: 15}
-    assert Packet.query_type(mx_packet) == "MX"
+    assert Packet.query_type(mx_packet) == :mx
   end
 
   test "query_class/1" do
     inet_packet = %Packet{query_class: 1}
-    assert Packet.query_class(inet_packet) == "IN"
+    assert Packet.query_class(inet_packet) == :in
   end
 
   test "query_domain/1" do

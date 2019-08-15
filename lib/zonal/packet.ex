@@ -30,29 +30,29 @@ defmodule Zonal.Packet do
   """
 
   @types %{
-    1 => "A",
-    2 => "NS",
-    3 => "MD",
-    4 => "MF",
-    5 => "CNAME",
-    6 => "SOA",
-    7 => "MB",
-    8 => "MG",
-    9 => "MR",
-    10 => "NULL",
-    11 => "WKS",
-    12 => "PTR",
-    13 => "HINFO",
-    14 => "MINFO",
-    15 => "MX",
-    16 => "TXT"
+    1 => :a,
+    2 => :ns,
+    3 => :md,
+    4 => :mf,
+    5 => :cname,
+    6 => :soa,
+    7 => :mb,
+    8 => :mg,
+    9 => :mr,
+    10 => :null,
+    11 => :wks,
+    12 => :ptr,
+    13 => :hinfo,
+    14 => :minfo,
+    15 => :mx,
+    16 => :txt
   }
 
   @classes %{
-    1 => "IN",
-    2 => "CSNET",
-    3 => "CHAOS",
-    4 => "Hesiod"
+    1 => :in,
+    2 => :csnet,
+    3 => :chaos,
+    4 => :hs
   }
 
   @type t() :: %__MODULE__{}
