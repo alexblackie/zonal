@@ -45,7 +45,8 @@ defmodule Zonal.Packet do
     13 => :hinfo,
     14 => :minfo,
     15 => :mx,
-    16 => :txt
+    16 => :txt,
+    28 => :aaaa
   }
 
   @classes %{
