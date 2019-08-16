@@ -12,12 +12,11 @@ defmodule Zonal.Resolver do
     serialized_packet = Serializer.serialize(packet)
 
     {:ok, sock} = :socket.open(:inet, :dgram)
-    :ok = :socket.connect(sock, %{family: :inet, port: 53, addr: {1,1,1,1}})
+    :ok = :socket.connect(sock, %{family: :inet, port: 53, addr: {1, 1, 1, 1}})
     :ok = :socket.send(sock, serialized_packet)
 
     {:ok, bresp} = :socket.recv(sock)
 
     Parser.parse(bresp)
   end
-
 end

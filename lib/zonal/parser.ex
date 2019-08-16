@@ -71,9 +71,10 @@ defmodule Zonal.Parser do
   #
   # EDNS packet: (<<0>> is the root domain)
   def parse_resources(
-         <<0, rtype::16, rclass::16, ttl::32, rdlength::16, rdata::size(rdlength)-binary>>,
-         _packet, bag
-       ) do
+        <<0, rtype::16, rclass::16, ttl::32, rdlength::16, rdata::size(rdlength)-binary>>,
+        _packet,
+        bag
+      ) do
     [
       %Resource{
         type: rtype,
@@ -85,7 +86,12 @@ defmodule Zonal.Parser do
     ]
   end
 
-  def parse_resources(<<pointer::16-bitstring, rtype::16, rclass::16, ttl::32, rdlength::16, rdata::size(rdlength)-binary, more::binary>>, packet, bag) do
+  def parse_resources(
+        <<pointer::16-bitstring, rtype::16, rclass::16, ttl::32, rdlength::16,
+          rdata::size(rdlength)-binary, more::binary>>,
+        packet,
+        bag
+      ) do
     parse_resources(
       more,
       packet,
@@ -162,10 +168,11 @@ defmodule Zonal.Parser do
   end
 
   defp parse_rdata(15, <<priority::16, exchange::binary>>, packet) do
-    address = extract_domains(exchange, [])
-              |> Enum.map(fn d -> decompress_name(d, packet) end)
-              |> Enum.reverse()
-              |> Enum.join(".")
+    address =
+      extract_domains(exchange, [])
+      |> Enum.map(fn d -> decompress_name(d, packet) end)
+      |> Enum.reverse()
+      |> Enum.join(".")
 
     "#{priority} #{address}"
   end
