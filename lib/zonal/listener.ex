@@ -22,8 +22,8 @@ defmodule Zonal.Listener do
     resp =
       case Zones.get_resource(packet) do
         [] ->
-          # nxdomain
-          Map.put(packet, :response_code, 3)
+          # recurse if we don't know it
+          Zonal.Resolver.resolve(packet)
 
         records ->
           packet

@@ -76,7 +76,8 @@ defmodule Zonal.Packet do
     :tld_name,
     subdomains: [],
     resources: [],
-    answers: []
+    answers: [],
+    authorities: []
   ]
 
   def query?(packet), do: packet.query_or_resource == 0
