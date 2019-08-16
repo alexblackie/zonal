@@ -15,10 +15,7 @@ defmodule Zonal.Parser do
 
     parts = extract_domains(domain_and_data, [])
 
-    domain_bytes =
-      parts
-      |> Enum.reduce(0, fn p, acc -> acc + byte_size(p) end)
-      |> Kernel.+(length(parts))
+    domain_bytes = serialized_name_byte_size(parts)
 
     <<_domains::size(domain_bytes)-binary, 0, qtype::16, qclass::16, additional::binary>> =
       domain_and_data
@@ -112,6 +109,41 @@ defmodule Zonal.Parser do
     bag
   end
 
+  # because we don't know the length of the first field (name), we can't match out.
+  def parse_resources(<<domain_and_data::binary>>, packet, bag) do
+    parts =
+      extract_domains(domain_and_data, [])
+      |> Enum.map(fn d -> decompress_name(d, packet) end)
+
+    domain_bytes = serialized_name_byte_size(parts)
+
+    domain_name = Enum.reverse(parts) |> Enum.join(".")
+
+    <<_::size(domain_bytes)-binary, 0, rtype::16, rclass::16, ttl::32, rdlength::16,
+      rdata::size(rdlength)-binary, more::binary>> = domain_and_data
+
+    parse_resources(
+      more,
+      packet,
+      [
+        %Resource{
+          name: domain_name,
+          type: rtype,
+          class: rclass,
+          ttl: ttl,
+          data: parse_rdata(rtype, rdata, packet)
+        }
+        | bag
+      ]
+    )
+  end
+
+  def parse_resources(other, _packet, bag) do
+    Logger.error("Tried to parse unhandled resource! #{inspect(other, limit: :infinity)}")
+
+    bag
+  end
+
   # Use the compression pointer bits to find the domain in <packet>
   def decompress_name(<<1::1, 1::1, pointer::14>>, packet) do
     remaining_packet_size = byte_size(packet) - pointer
@@ -167,6 +199,37 @@ defmodule Zonal.Parser do
     |> Enum.join(".")
   end
 
+  defp parse_rdata(6, soa_data, _packet) do
+    mname =
+      extract_domains(soa_data, [])
+      |> Enum.reverse()
+
+    mname_length = serialized_name_byte_size(mname)
+
+    <<_mname::size(mname_length)-binary, 0, rname_and_beyond::binary>> = soa_data
+
+    rname =
+      extract_domains(rname_and_beyond, [])
+      |> Enum.reverse()
+
+    rname_length = serialized_name_byte_size(rname)
+
+    total_name_bytes = mname_length + rname_length + 1
+
+    <<_mname_and_rname::size(total_name_bytes)-binary, 0, serial::32, refresh::32, retry::32,
+      expire::32, minimum::32>> = soa_data
+
+    %{
+      mname: Enum.join(mname, "."),
+      rname: Enum.join(rname, "."),
+      serial: serial,
+      refresh: refresh,
+      retry: retry,
+      expire: expire,
+      minimum: minimum
+    }
+  end
+
   defp parse_rdata(15, <<priority::16, exchange::binary>>, packet) do
     address =
       extract_domains(exchange, [])
@@ -183,5 +246,13 @@ defmodule Zonal.Parser do
 
   defp parse_rdata(_type, data, _packet) do
     data
+  end
+
+  # Get the number of bytes this list of names would be when serialized
+  # in a packet as a <domain-name> (with bytes-per-field prefixed).
+  defp serialized_name_byte_size(parts) do
+    parts
+    |> Enum.reduce(0, fn p, acc -> acc + byte_size(p) end)
+    |> Kernel.+(length(parts))
   end
 end

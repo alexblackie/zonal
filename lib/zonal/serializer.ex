@@ -42,6 +42,11 @@ defmodule Zonal.Serializer do
         packet <> serialize_resource(resource, packet)
       end)
 
+    result =
+      Enum.reduce(packet.authorities, result, fn %Resource{} = resource, packet ->
+        packet <> serialize_resource(resource, packet)
+      end)
+
     Enum.reduce(packet.resources, result, fn %Resource{} = resource, packet ->
       packet <> serialize_resource(resource, packet)
     end)
@@ -77,6 +82,28 @@ defmodule Zonal.Serializer do
     |> String.split(".")
     |> Enum.map(&String.to_integer/1)
     |> :binary.list_to_bin()
+  end
+
+  defp serialize_rdata(
+         6,
+         %{
+           rname: rname,
+           mname: mname,
+           serial: serial,
+           refresh: refresh,
+           retry: retry,
+           expire: expire,
+           minimum: minimum
+         } = data
+       ) do
+    mname = serialize_name(mname)
+    rname = serialize_name(rname)
+
+    mname_length = byte_size(mname)
+    rname_length = byte_size(rname)
+
+    <<mname::size(mname_length)-binary, rname::size(rname_length)-binary, serial::32, refresh::32,
+      retry::32, expire::32, minimum::32>>
   end
 
   defp serialize_rdata(15, data) do
