@@ -32,6 +32,15 @@ defmodule Zonal.ParserTest do
                                   1, 0, 0, 1, 23, 0, 9, 0, 10, 4, 97, 108, 116, 51, 192, 52, 0, 0,
                                   41, 5, 172, 0, 0, 0, 0, 0, 0>>
 
+  @fixture_soa_response <<8, 88, 129, 128, 0, 1, 0, 1, 0, 0, 0, 1, 11, 97, 108, 101, 120, 98, 108,
+                          97, 99, 107, 105, 101, 3, 99, 111, 109, 0, 0, 6, 0, 1, 192, 12, 0, 6, 0,
+                          1, 0, 0, 3, 132, 0, 72, 6, 110, 115, 45, 54, 52, 48, 9, 97, 119, 115,
+                          100, 110, 115, 45, 49, 54, 3, 110, 101, 116, 0, 17, 97, 119, 115, 100,
+                          110, 115, 45, 104, 111, 115, 116, 109, 97, 115, 116, 101, 114, 6, 97,
+                          109, 97, 122, 111, 110, 3, 99, 111, 109, 0, 0, 0, 0, 1, 0, 0, 28, 32, 0,
+                          0, 3, 132, 0, 18, 117, 0, 0, 1, 81, 128, 0, 0, 41, 5, 172, 0, 0, 0, 0,
+                          0, 0>>
+
   test "parse/1 with a valid A record request" do
     packet = Parser.parse(@fixture_a_request)
 
@@ -79,5 +88,16 @@ defmodule Zonal.ParserTest do
     assert Enum.member?(mx_values, "5 alt1.aspmx.l.google.com")
     assert Enum.member?(mx_values, "5 alt2.aspmx.l.google.com")
     assert Enum.member?(mx_values, "10 alt3.aspmx.l.google.com")
+  end
+
+  test "parse/1 with a valid SOA response" do
+    packet = Parser.parse(@fixture_soa_response)
+
+    assert length(packet.answers) == 1
+    rr = List.first(packet.answers)
+    assert rr.name == "alexblackie.com"
+
+    assert %{mname: "ns-640.awsdns-16.net", rname: "awsdns-hostmaster.amazon.com", minimum: 86400} =
+             rr.data
   end
 end

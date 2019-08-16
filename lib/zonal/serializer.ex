@@ -94,7 +94,7 @@ defmodule Zonal.Serializer do
            retry: retry,
            expire: expire,
            minimum: minimum
-         } = data
+         }
        ) do
     mname = serialize_name(mname)
     rname = serialize_name(rname)

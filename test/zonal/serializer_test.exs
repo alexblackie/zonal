@@ -136,6 +136,52 @@ defmodule Zonal.SerializerTest do
                                       120, 45, 98, 7, 101, 120, 97, 109, 112, 108, 101, 3, 99,
                                       111, 109, 0>>
 
+  @standard_answer_packet_soa %Packet{
+    id: 123,
+    query_or_resource: 1,
+    opcode: 0,
+    authoritative_answer: 1,
+    truncated: 0,
+    recursion_desired: 1,
+    recursion_available: 1,
+    response_code: 0,
+    query_count: 1,
+    answer_count: 1,
+    nameserver_count: 0,
+    additional_count: 0,
+    query_type: 6,
+    query_class: 1,
+    subdomains: [],
+    domain_name: "example",
+    tld_name: "com",
+    answers: [
+      %Resource{
+        name: "example.com",
+        class: 1,
+        type: 6,
+        ttl: 300,
+        data: %{
+          expire: 1_209_600,
+          minimum: 86400,
+          mname: "ns-640.awsdns-16.net",
+          refresh: 7200,
+          retry: 900,
+          rname: "awsdns-hostmaster.amazon.com",
+          serial: 1
+        }
+      }
+    ]
+  }
+
+  @standard_answer_packet_soa_binary <<0, 123, 133, 128, 0, 1, 0, 1, 0, 0, 0, 0, 7, 101, 120, 97,
+                                       109, 112, 108, 101, 3, 99, 111, 109, 0, 0, 6, 0, 1, 192,
+                                       12, 0, 6, 0, 1, 0, 0, 1, 44, 0, 72, 6, 110, 115, 45, 54,
+                                       52, 48, 9, 97, 119, 115, 100, 110, 115, 45, 49, 54, 3, 110,
+                                       101, 116, 0, 17, 97, 119, 115, 100, 110, 115, 45, 104, 111,
+                                       115, 116, 109, 97, 115, 116, 101, 114, 6, 97, 109, 97, 122,
+                                       111, 110, 3, 99, 111, 109, 0, 0, 0, 0, 1, 0, 0, 28, 32, 0,
+                                       0, 3, 132, 0, 18, 117, 0, 0, 1, 81, 128>>
+
   test "serialize/1 basic query" do
     assert @standard_query_packet_binary = Serializer.serialize(@standard_query_packet)
   end
@@ -155,5 +201,9 @@ defmodule Zonal.SerializerTest do
 
   test "serialize/1 basic answer MX record" do
     assert @standard_answer_packet_mx_binary = Serializer.serialize(@standard_answer_packet_mx)
+  end
+
+  test "serialize/1 basic answer SOA record" do
+    assert @standard_answer_packet_soa_binary = Serializer.serialize(@standard_answer_packet_soa)
   end
 end
