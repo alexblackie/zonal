@@ -1,21 +1,6 @@
 # Zonal
 
-**TODO: Add description**
+🚧 **Work in progress**! Absolutely do not use this for anything.
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `zonal` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:zonal, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/zonal](https://hexdocs.pm/zonal).
-
+This is an attempt to build a replacement to ISC Bind, except in Elixir, and
+perhaps with some more "modern approaches" such as APIs or nicer configuration.
