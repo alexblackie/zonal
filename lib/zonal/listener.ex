@@ -1,7 +1,8 @@
 defmodule Zonal.Listener do
   use GenServer
+  require Logger
 
-  alias Zonal.{Parser, Serializer, Zones}
+  alias Zonal.{Packet, Parser, Serializer, Zones}
 
   @port Application.get_env(:zonal, :port)
 
@@ -18,6 +19,8 @@ defmodule Zonal.Listener do
   @impl true
   def handle_info({:udp, sock, addr, port, blob}, state) do
     packet = Parser.parse(blob)
+
+    log_query(addr, packet)
 
     resp =
       case Zones.get_resource(packet) do
@@ -40,5 +43,16 @@ defmodule Zonal.Listener do
     :gen_udp.send(sock, addr, port, resp)
 
     {:noreply, state}
+  end
+
+  defp log_query({addr_one, addr_two, addr_three, addr_four}, %Packet{} = packet) do
+    logline = [
+      "#{addr_one}.#{addr_two}.#{addr_three}.#{addr_four}",
+      Packet.query_domain(packet),
+      Packet.query_type(packet),
+      Packet.query_class(packet)
+    ]
+
+    Logger.debug("QUERY: " <> Enum.join(logline, " - "))
   end
 end
